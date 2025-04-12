@@ -105,13 +105,27 @@ public class NorthOfHouse : IArea
 public class SouthOfHouse : IArea
 {
     public string Name => "South of House";
-    public string Description => "You are facing the south side of a white house. There is no door here, and all the windows are boarded";
+    public string Description => "You are facing the south side of a white house. There is no door here, and all the windows are boarded.";
 
     public Dictionary<string, IArea> Exits { get; } = new Dictionary<string, IArea>();
     public Dictionary<string, string> BlockedExits => new Dictionary<string, string>
     {
         { "north", "The windows are all boarded." }
     };
+
+    public void DisplayInformation()
+    {
+        Console.WriteLine(Name);
+        Console.WriteLine(Description);
+    }
+}
+
+public class BehindHouse : IArea
+{
+    public string Name => "Behind House";
+    public string Description => "You are behind the white house. A path leads into the forest to the east. In one corner of the house there is a small window which is slightly ajar.";
+
+    public Dictionary<string, IArea> Exits { get; } = new Dictionary<string, IArea>();
 
     public void DisplayInformation()
     {
@@ -128,14 +142,20 @@ public class GameFactory : IZorkFactory
         IArea forest = new Forest();
         IArea northOfHouse = new NorthOfHouse();
         IArea southOfHouse = new SouthOfHouse();
+        IArea behindHouse = new BehindHouse();
 
         westOfHouse.Exits.Add("north", northOfHouse);
         westOfHouse.Exits.Add("west", forest);
         westOfHouse.Exits.Add("south", southOfHouse);
 
         northOfHouse.Exits.Add("west", westOfHouse);
+        northOfHouse.Exits.Add("east", behindHouse);
 
         southOfHouse.Exits.Add("west", westOfHouse);
+        southOfHouse.Exits.Add("east", behindHouse);
+
+        behindHouse.Exits.Add("north", northOfHouse);
+        behindHouse.Exits.Add("south", southOfHouse);
 
         return westOfHouse;
     }
@@ -145,6 +165,15 @@ class Program
 {
     static void Main()
     {
+        List<string> commands = new List<string>
+        {
+            "answer", "attack", "blow", "break", "burn", "climb", "close", "count", "cross", "cut",
+            "deflate", "dig", "drink", "drop", "eat", "enter", "examine", "exit", "extinguish", "fill", "follow",
+            "give", "inflate", "jump", "kick", "knock", "light", "listen", "lock", "look", "lower", "move",
+            "open", "pour", "pray", "pull", "push", "put", "raise", "read", "say", "search", "shake", "slide", "smell", "stay",
+            "strike", "swim", "take", "tell", "throw", "tie", "touch", "turn", "unlock", "wake", "walk", "wave", "wear", "wind"
+        };
+
         IZorkFactory factory = new GameFactory();
         IArea area = factory.LoadArea();
 
