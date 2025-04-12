@@ -14,6 +14,9 @@ public interface IArea
     Dictionary<string, IArea> Exits { get; }
     Dictionary<string, string> BlockedExits => new Dictionary<string, string>();
 
+    List<IContainer> Containers => new List<IContainer>();
+    List<IItem> Items => new List<IItem>();
+
     public void DisplayInformation();
 }
 
@@ -26,7 +29,10 @@ public interface IContainer
 public interface IItem
 {
     string Name { get; }
-    void Use();
+    string Description { get; }
+    bool inInventory { get; set; }
+
+    void PickUp();
 }
 
 public class WestOfHouse : IArea
@@ -40,34 +46,54 @@ public class WestOfHouse : IArea
         { "east", "The door is boarded and you can't remove the boards" }
     };
 
-    private IContainer mailbox = new Mailbox();
+    private readonly List<IContainer> _containers = new();
+    private readonly List<IItem> _items = new();
+
+    public List<IContainer> Containers => _containers;
+    public List<IItem> Items => _items;
+
+    public WestOfHouse()
+    {
+        _containers.Add(new Mailbox());
+    }
 
     public void DisplayInformation()
     {
         Console.WriteLine(Name);
         Console.WriteLine(Description);
     }
-
-    public IContainer GetMailbox() => mailbox;
 }
 
 public class Mailbox : IContainer
 {
     public string Name => "mailbox";
+    private bool isOpened = false;
+    private IItem item = new Leaflet();
 
     public IItem Open()
     {
-        Console.WriteLine("Opening the small mailbox reveals a leaflet.");
-        return new Leaflet();
+        if (!isOpened)
+        {
+            Console.WriteLine("Opening the small mailbox reveals a leaflet.");
+            isOpened = true;
+            return item;
+        }
+        else
+        {
+            Console.WriteLine("It is already open.");
+            return null;
+        }
     }
 }
 
 public class Leaflet : IItem
 {
-    public string Name => "Leaflet";
-    public void Use()
+    public string Name => "leaflet";
+    public string Description => "\"WELCOME TO ZORK!\n\nZORK is a game of adventure, danger, and low cunning. In it you will explore some of the most amazing territory ever seen by mortals. No computer should be without one!\"\n";
+    public bool inInventory { get; set; } = false;
+    public void PickUp()
     {
-        Console.WriteLine("(Taken)\n\"WELCOME TO ZORK!\n\nZORK is a game of adventure, danger, and low cunning. In it you will explore some of the most amazing territory ever seen by mortals. No computer should be without one!\"\n");
+        Console.WriteLine(Description);
     }
 }
 
@@ -157,6 +183,9 @@ public class GameFactory : IZorkFactory
         behindHouse.Exits.Add("north", northOfHouse);
         behindHouse.Exits.Add("south", southOfHouse);
 
+        forest.Exits.Add("west", forest);
+        forest.Exits.Add("north", forest);
+
         return westOfHouse;
     }
 }
@@ -165,14 +194,7 @@ class Program
 {
     static void Main()
     {
-        List<string> commands = new List<string>
-        {
-            "answer", "attack", "blow", "break", "burn", "climb", "close", "count", "cross", "cut",
-            "deflate", "dig", "drink", "drop", "eat", "enter", "examine", "exit", "extinguish", "fill", "follow",
-            "give", "inflate", "jump", "kick", "knock", "light", "listen", "lock", "look", "lower", "move",
-            "open", "pour", "pray", "pull", "push", "put", "raise", "read", "say", "search", "shake", "slide", "smell", "stay",
-            "strike", "swim", "take", "tell", "throw", "tie", "touch", "turn", "unlock", "wake", "walk", "wave", "wear", "wind"
-        };
+        List<IItem> inventory = new List<IItem>();
 
         IZorkFactory factory = new GameFactory();
         IArea area = factory.LoadArea();
@@ -182,23 +204,83 @@ class Program
         while (true)
         {
             string input = Console.ReadLine().Trim().ToLower();
+            string[] parts = input.Split(' ', 2);
+            string command = parts[0];
+            string target = parts.Length > 1 ? parts[1] : "";
 
-            if (string.IsNullOrEmpty(input))
+            switch (command)
             {
-                continue;
-            }
-            else if (area.Exits.TryGetValue(input, out IArea nextArea))
-            {
-                area = nextArea;
-                area.DisplayInformation();
-            }
-            else if (area.BlockedExits.ContainsKey(input))
-            {
-                Console.WriteLine(area.BlockedExits[input]);
-            }
-            else
-            {
-                Console.WriteLine($"I do not know the word \"{input}\"");
+                case "inventory":
+                    if (inventory.Count == 0)
+                    {
+                        Console.WriteLine("You are empty-handed.");
+                    }
+                    else
+                    {
+                        Console.WriteLine("You are carrying:");
+                        foreach (IItem item in inventory)
+                        {
+                            Console.WriteLine($"\t{item.Name}");
+                        }
+                    }
+                    break;
+                case "open":
+                    var container = area.Containers.FirstOrDefault(c => c.Name == target);
+                    if (container != null)
+                    {
+                        IItem item = container.Open();
+                        if (item != null && !item.inInventory)
+                        {
+                            area.Items.Add(item);
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine($"There is no {target} to open here.");
+                    }
+                    break;
+
+                case "take":
+                    var receivableItem = area.Items.FirstOrDefault(i => i.Name == target && !i.inInventory);
+                    if (receivableItem != null)
+                    {
+                        receivableItem.inInventory = true;
+                        inventory.Add(receivableItem);
+                        area.Items.Remove(receivableItem);
+                        Console.WriteLine("Taken.");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"I do not know the word \"{target}\"");
+                    }
+                    break;
+
+                case "read":
+                    var readableItem = inventory.FirstOrDefault(i => i.Name == target);
+                    if (readableItem != null)
+                    {
+                        readableItem.PickUp();
+                    }
+                    else
+                    {
+                        Console.WriteLine($"You can't see any {target} here!");
+                    }
+                    break;
+                default:
+                    if (area.Exits.TryGetValue(input, out IArea nextArea))
+                    {
+                        area = nextArea;
+                        area.DisplayInformation();
+                    }
+                    else if (area.BlockedExits.ContainsKey(input))
+                    {
+                        Console.WriteLine(area.BlockedExits[input]);
+                    }
+                    else
+                    {
+                        Console.WriteLine($"I do not know the word \"{input}\"");
+                    }
+                    break;
             }
         }
     }
