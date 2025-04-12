@@ -84,16 +84,58 @@ public class Forest : IArea
     }
 }
 
-public class WestOfHouseFactory : IZorkFactory
+public class NorthOfHouse : IArea
+{
+    public string Name => "North of House";
+    public string Description => "You are facing the north side of a white house. There is no door here, and all the windows are boarded up. To the north a narrow path winds through the trees.";
+
+    public Dictionary<string, IArea> Exits { get; } = new Dictionary<string, IArea>();
+    public Dictionary<string, string> BlockedExits => new Dictionary<string, string>
+    {
+        { "south", "The windows are all boarded." }
+    };
+
+    public void DisplayInformation()
+    {
+        Console.WriteLine(Name);
+        Console.WriteLine(Description);
+    }
+}
+
+public class SouthOfHouse : IArea
+{
+    public string Name => "South of House";
+    public string Description => "You are facing the south side of a white house. There is no door here, and all the windows are boarded";
+
+    public Dictionary<string, IArea> Exits { get; } = new Dictionary<string, IArea>();
+    public Dictionary<string, string> BlockedExits => new Dictionary<string, string>
+    {
+        { "north", "The windows are all boarded." }
+    };
+
+    public void DisplayInformation()
+    {
+        Console.WriteLine(Name);
+        Console.WriteLine(Description);
+    }
+}
+
+public class GameFactory : IZorkFactory
 {
     public IArea LoadArea()
     {
         IArea westOfHouse = new WestOfHouse();
         IArea forest = new Forest();
+        IArea northOfHouse = new NorthOfHouse();
+        IArea southOfHouse = new SouthOfHouse();
 
-        westOfHouse.Exits.Add("north", forest);
+        westOfHouse.Exits.Add("north", northOfHouse);
         westOfHouse.Exits.Add("west", forest);
-        westOfHouse.Exits.Add("south", forest);
+        westOfHouse.Exits.Add("south", southOfHouse);
+
+        northOfHouse.Exits.Add("west", westOfHouse);
+
+        southOfHouse.Exits.Add("west", westOfHouse);
 
         return westOfHouse;
     }
@@ -103,25 +145,19 @@ class Program
 {
     static void Main()
     {
-        IZorkFactory factory = new WestOfHouseFactory();
+        IZorkFactory factory = new GameFactory();
         IArea area = factory.LoadArea();
 
         area.DisplayInformation();
-        var westOfHouse = area as WestOfHouse;
-        IContainer mailbox = westOfHouse?.GetMailbox();
 
         while (true)
         {
             string input = Console.ReadLine().Trim().ToLower();
 
-            if (string.IsNullOrEmpty(input)) continue;
-
-            if (input == "open mailbox")
+            if (string.IsNullOrEmpty(input))
             {
-                IItem leaflet = mailbox.Open();
-                leaflet.Use();
+                continue;
             }
-
             else if (area.Exits.TryGetValue(input, out IArea nextArea))
             {
                 area = nextArea;
