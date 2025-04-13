@@ -160,6 +160,20 @@ public class BehindHouse : IArea
     }
 }
 
+public class ForestPath : IArea
+{
+    public string Name => "Forest Path";
+    public string Description => "This is a path winding through a dimly lit forest. The path heads north-south here. One particularly large tree with some low branches stands at the edge of the path.";
+
+    public Dictionary<string, IArea> Exits { get; } = new Dictionary<string, IArea>();
+
+    public void DisplayInformation()
+    {
+        Console.WriteLine(Name);
+        Console.WriteLine(Description);
+    }
+}
+
 public class GameFactory : IZorkFactory
 {
     public IArea LoadArea()
@@ -169,6 +183,7 @@ public class GameFactory : IZorkFactory
         IArea northOfHouse = new NorthOfHouse();
         IArea southOfHouse = new SouthOfHouse();
         IArea behindHouse = new BehindHouse();
+        IArea forestPath = new ForestPath();
 
         westOfHouse.Exits.Add("north", northOfHouse);
         westOfHouse.Exits.Add("west", forest);
@@ -176,6 +191,7 @@ public class GameFactory : IZorkFactory
 
         northOfHouse.Exits.Add("west", westOfHouse);
         northOfHouse.Exits.Add("east", behindHouse);
+        northOfHouse.Exits.Add("north", forestPath);
 
         southOfHouse.Exits.Add("west", westOfHouse);
         southOfHouse.Exits.Add("east", behindHouse);
@@ -184,7 +200,11 @@ public class GameFactory : IZorkFactory
         behindHouse.Exits.Add("south", southOfHouse);
 
         forest.Exits.Add("west", forest);
+        forest.Exits.Add("east", forestPath);
         forest.Exits.Add("north", forest);
+
+        forestPath.Exits.Add("south", northOfHouse);
+        forestPath.Exits.Add("west", forest);
 
         return westOfHouse;
     }
