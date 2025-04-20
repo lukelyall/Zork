@@ -16,6 +16,7 @@ public interface IArea
 
     List<IContainer> Containers => new List<IContainer>();
     List<IItem> Items => new List<IItem>();
+    List<IDoor> Doors => new List<IDoor>(); 
 
     public void DisplayInformation(List<IItem> inventory);
 }
@@ -34,6 +35,15 @@ public interface IItem
     bool inInventory { get; set; }
 
     void Text();
+}
+
+public interface IDoor
+{ 
+    string Name { get; }
+    string Description { get; }
+    string Direction { get; }
+
+    void Open();
 }
 
 public class WestOfHouse : IArea
@@ -158,16 +168,61 @@ public class BehindHouse : IArea
         "In one corner of the house there is a small window which is slightly ajar.";
 
     public Dictionary<string, IArea> Exits { get; } = new Dictionary<string, IArea>();
+    private readonly List<IDoor> _doors = new();
+    public List<IDoor> Doors => _doors;
 
-    public Dictionary<string, string> BlockedExits => new Dictionary<string, string>
+    public Dictionary<string, string> BlockedExits
     {
-        { "north", "The forest becomes impenetrable to the north." }
-    };
+        get
+        {
+            var blockedExits = new Dictionary<string, string>
+            {
+                { "north", "The forest becomes impenetrable to the north." }
+            };
+
+            var window = _doors.OfType<Window>().FirstOrDefault();
+            if (window != null && !window.IsOpened)
+            {
+                blockedExits.Add("west", "The kitchen window is closed.");
+            }
+
+            return blockedExits;
+        }
+    }
+
+    public BehindHouse()
+    {
+        _doors.Add(new Window());
+    }
 
     public void DisplayInformation(List<IItem> inventory)
     {
         Console.WriteLine(Name);
         Console.WriteLine(Description);
+    }
+}
+
+public class Window : IDoor
+{
+    public string Name => "window";
+    public string Description => "The kitchen window is closed.";
+    public string Direction => "west";
+    private bool isOpened = false;
+    public bool IsOpened => isOpened;
+
+    private IArea kitchen = new Kitchen();
+
+    public void Open()
+    {
+        if (!isOpened)
+        {
+            Console.WriteLine("With great effort, you open the window far enough to allow entry.");
+            isOpened = true;
+        }
+        else
+        {
+            Console.WriteLine("Too late for that");
+        }
     }
 }
 
@@ -576,14 +631,15 @@ public class GameFactory : IZorkFactory
 
         canyonView.Exits.Add("west", forestSouth);
         canyonView.Exits.Add("east", rockyLedge);
+        canyonView.Exits.Add("down", rockyLedge);
 
-        rockyLedge.Exits.Add("north", canyonView);
-        rockyLedge.Exits.Add("south", canyonBottom);
+        rockyLedge.Exits.Add("up", canyonView);
+        rockyLedge.Exits.Add("down", canyonBottom);
 
-        canyonBottom.Exits.Add("north", rockyLedge);
-        canyonBottom.Exits.Add("east", endOfRainbow);
+        canyonBottom.Exits.Add("up", rockyLedge);
+        canyonBottom.Exits.Add("north", endOfRainbow);
 
-        endOfRainbow.Exits.Add("west", canyonBottom);
+        endOfRainbow.Exits.Add("south", canyonBottom);
 
         kitchen.Exits.Add("east", behindHouse);
         kitchen.Exits.Add("west", livingRoom);
@@ -633,6 +689,7 @@ class Program
                     break;
                 case "open":
                     var container = area.Containers.FirstOrDefault(c => c.Name.Contains(target));
+                    var door = area.Doors.FirstOrDefault(c => c.Name.Contains(target));
                     if (container != null)
                     {
                         List<IItem> items = container.Open();
@@ -644,12 +701,15 @@ class Program
                             }
                         }
                     }
+                    else if (door != null)
+                    {
+                        door.Open();
+                    }
                     else
                     {
                         Console.WriteLine($"There is no {target} to open here.");
                     }
                     break;
-
                 case "take":
                     var receivableItem = area.Items.FirstOrDefault(i => i.Name.Contains(target) && !i.inInventory);
                     if (receivableItem != null)
@@ -664,7 +724,6 @@ class Program
                         Console.WriteLine($"I do not know the word \"{target}\"");
                     }
                     break;
-
                 case "read":
                     var readableItem = inventory.FirstOrDefault(i => i.Name.Contains(target));
                     if (readableItem != null)
@@ -680,14 +739,14 @@ class Program
                     Console.WriteLine("I beg your pardon?");
                     break;
                 default:
-                    if (area.Exits.TryGetValue(input, out IArea? nextArea) && nextArea != null)
+                    if (area.BlockedExits.ContainsKey(input))
+                    {
+                        Console.WriteLine(area.BlockedExits[input]);
+                    }
+                    else if (area.Exits.TryGetValue(input, out IArea? nextArea) && nextArea != null)
                     {
                         area = nextArea;
                         area.DisplayInformation(inventory);
-                    }
-                    else if (area.BlockedExits.ContainsKey(input))
-                    {
-                        Console.WriteLine(area.BlockedExits[input]);
                     }
                     else
                     {
