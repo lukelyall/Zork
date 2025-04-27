@@ -54,7 +54,9 @@ public class WestOfHouse : IArea
     public Dictionary<string, IArea> Exits { get; } = new Dictionary<string, IArea>();
     public Dictionary<string, string> BlockedExits => new Dictionary<string, string>
     {
-        { "east", "The door is boarded and you can't remove the boards." }
+        { "east", "The door is boarded and you can't remove the boards." },
+        { "up", "You can't go that way." },
+        { "down", "You can't go that way." }
     };
 
     private readonly List<IContainer> _containers = new();
@@ -116,6 +118,12 @@ public class Forest : IArea
     public string Name => "Forest";
     public string Description => "This is a forest. Trees in all directions. To the east, there appears to be sunlight.";
     public Dictionary<string, IArea> Exits { get; } = new Dictionary<string, IArea>();
+    public Dictionary<string, string> BlockedExits => new Dictionary<string, string>
+    {
+        { "up", "There is no tree here suitable for climbing." },
+        { "down", "You can't go that way." }
+    };
+
 
     public void DisplayInformation(List<IItem> inventory)
     {
@@ -133,7 +141,9 @@ public class NorthOfHouse : IArea
     public Dictionary<string, IArea> Exits { get; } = new Dictionary<string, IArea>();
     public Dictionary<string, string> BlockedExits => new Dictionary<string, string>
     {
-        { "south", "The windows are all boarded." }
+        { "south", "The windows are all boarded." },
+        { "up", "You can't go that way." }, 
+        { "down", "You can't go that way." }
     };
 
     public void DisplayInformation(List<IItem> inventory)
@@ -151,7 +161,9 @@ public class SouthOfHouse : IArea
     public Dictionary<string, IArea> Exits { get; } = new Dictionary<string, IArea>();
     public Dictionary<string, string> BlockedExits => new Dictionary<string, string>
     {
-        { "north", "The windows are all boarded." }
+        { "north", "The windows are all boarded." },
+        { "up", "You can't go that way." }, 
+        { "down", "You can't go that way." }
     };
 
     public void DisplayInformation(List<IItem> inventory)
@@ -177,7 +189,10 @@ public class BehindHouse : IArea
         {
             var blockedExits = new Dictionary<string, string>
             {
-                { "north", "The forest becomes impenetrable to the north." }
+                { "north", "The forest becomes impenetrable to the north." },
+                { "up", "You can't go that way." },
+                { "down", "You can't go that way." }
+
             };
 
             var window = _doors.OfType<Window>().FirstOrDefault();
@@ -246,10 +261,60 @@ public class ForestPath : IArea
         "The path heads north-south here. One particularly large tree with some low branches stands at the edge of the path.";
 
     public Dictionary<string, IArea> Exits { get; } = new Dictionary<string, IArea>();
+    public Dictionary<string, string> BlockedExits => new Dictionary<string, string>
+    {
+        { "down", "You can't go that way." }
+    };
+
 
     public void DisplayInformation(List<IItem> inventory)
     {
         Console.WriteLine(Name);
+        Console.WriteLine(Description);
+    }
+}
+
+public class UpATree : IArea
+{
+    public string Name => "Up a Tree";
+    public string Description => "You are about 10 feet above the ground nestled among some large branches. " +
+        "The nearest branch above you is above your reach. Beside you on the branch is a small bird's nest. " +
+        "In the bird's nest is a large egg encrusted with precious jewels, apparently scavenged by a childless songbird." +
+        "The egg is covered with fine gold inlay, and ornamented in lapis lazuli and mother-of-pearl. " +
+        "Unlike most eggs, this one is hinged and closed with a delicate looking clasp. The egg appears extremely fragile.";
+
+    public Dictionary<string, IArea> Exits { get; } = new Dictionary<string, IArea>();
+    public Dictionary<string, string> BlockedExits => new Dictionary<string, string>
+    {
+        { "up", "You cannot climb any higher." },
+        { "west", "You can't go that way."},
+        { "south", "You can't go that way."},
+        { "east", "You can't go that way."},
+        { "north", "You can't go that way.\nYou hear in the distance the chirping of a song bird."},
+    };
+    private readonly List<IItem> _items = new();
+    public List<IItem> Items => _items;
+
+    public UpATree()
+    {
+        _items.Add(new Egg());
+    }
+
+    public void DisplayInformation(List<IItem> inventory)
+    {
+        Console.WriteLine(Name);
+        Console.WriteLine(Description);
+    }
+}
+
+public class Egg : IItem
+{
+    public string Name => "jewel-encrusted egg";
+    public string Description => "How does one read a jewel-encrusted egg?";
+    public string Examine => "The jewel-encrusted egg is closed.";
+    public bool inInventory { get; set; } = false;
+    public void Text()
+    {
         Console.WriteLine(Description);
     }
 }
@@ -263,7 +328,9 @@ public class Clearing : IArea
     public Dictionary<string, IArea> Exits { get; } = new Dictionary<string, IArea>();
     public Dictionary<string, string> BlockedExits => new Dictionary<string, string>
     {
-        { "north", "The forest becomes impenetrable to the north." }
+        { "north", "The forest becomes impenetrable to the north." },
+        { "up", "You can't go that way." },
+        { "down", "You can't go that way." }
     };
 
     public void DisplayInformation(List<IItem> inventory)
@@ -282,7 +349,8 @@ public class ForestSouth : IArea
     public Dictionary<string, string> BlockedExits => new Dictionary<string, string>
     {
         { "east", "The rank undergrowth prevents eastward movement." },
-        { "south", "Storm-tossed trees block your way." }
+        { "up", "There is no tree here suitable for climbing." }, 
+        { "down", "You can't go that way." }
     };
 
     public void DisplayInformation(List<IItem> inventory)
@@ -298,6 +366,12 @@ public class ClearingEast : IArea
     public string Description => "You are in a small clearing in a well marked forest path that extends to the east and west.";
 
     public Dictionary<string, IArea> Exits { get; } = new Dictionary<string, IArea>();
+    public Dictionary<string, string> BlockedExits => new Dictionary<string, string>
+    {
+        { "up", "You can't go that way." },
+        { "down", "You can't go that way." }
+    };
+
 
     public void DisplayInformation(List<IItem> inventory)
     {
@@ -320,7 +394,8 @@ public class CanyonView : IArea
     public Dictionary<string, string> BlockedExits => new Dictionary<string, string>
     {
         { "north", "You can't go that way." },
-        { "south", "Storm-tossed trees block the way." }
+        { "south", "Storm-tossed trees block the way." },
+        { "up", "You can't go that way." }
     };
 
     public void DisplayInformation(List<IItem> inventory)
@@ -355,11 +430,12 @@ public class CanyonBottom : IArea
 {
     public string Name => "Canyon Bottom";
     public string Description => "You are beneath the walls of the river canyon which may be climbable here. " +
-        "The lesser part of the runoff of Aragain Falls flows by below. To the east is a narrow passage.";
+        "The lesser part of the runoff of Aragain Falls flows by below. To the north is a narrow passage.";
 
     public Dictionary<string, IArea> Exits { get; } = new Dictionary<string, IArea>();
     public Dictionary<string, string> BlockedExits => new Dictionary<string, string>
     {
+        { "east", "You can't go that way." },
         { "west", "You can't go that way." },
         { "south", "You can't go that way." }
     };
@@ -417,6 +493,7 @@ public class Kitchen : IArea
     public Dictionary<string, string> BlockedExits => new Dictionary<string, string>
     {
         { "south", "You can't go that way." },
+        { "down", "Only Santa Claus climbs down chimneys." }
     };
 
     public void DisplayInformation(List<IItem> inventory)
@@ -484,6 +561,8 @@ public class LivingRoom : IArea
     public Dictionary<string, string> BlockedExits => new Dictionary<string, string>
     {
         { "north", "You can't go that way." },
+        { "up", "You can't go that way." },
+        { "down", "You can't go that way." }
     };
 
     private readonly List<IContainer> _containers = new();
@@ -586,6 +665,7 @@ public class GameFactory : IZorkFactory
         IArea kitchen = new Kitchen();
         IArea livingRoom = new LivingRoom();
         IArea attic = new Attic();
+        IArea upATree = new UpATree();
 
         westOfHouse.Exits.Add("north", northOfHouse);
         westOfHouse.Exits.Add("west", forest);
@@ -612,6 +692,9 @@ public class GameFactory : IZorkFactory
         forestPath.Exits.Add("west", forest);
         forestPath.Exits.Add("east", forestNorthEast);
         forestPath.Exits.Add("north", clearing);
+        forestPath.Exits.Add("up", upATree);
+
+        upATree.Exits.Add("down", forestPath);
 
         forestNorthEast.Exits.Add("west", forestPath);
         forestNorthEast.Exits.Add("east", forestNorthEast);
