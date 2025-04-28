@@ -368,6 +368,7 @@ public class Kitchen : IArea
     public Kitchen()
     {
         _containers.Add(new BrownSack());
+        _items.Add(new BrownSackItem());
     }
 
 

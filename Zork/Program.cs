@@ -6,6 +6,12 @@ class Program
 {
     static void Main()
     {
+        /*
+         * implement dropping items
+         * when an item is dropped that area will display the text on the first line: 
+         *     "{item} is on the ground"
+         */
+
         List<IItem> inventory = new List<IItem>();
 
         IZorkFactory factory = new GameFactory();
@@ -78,6 +84,17 @@ class Program
                     if (readableItem != null)
                     {
                         readableItem.Text();
+                    }
+                    else
+                    {
+                        Console.WriteLine($"You can't see any {target} here!");
+                    }
+                    break;
+                case "examine":
+                    var examinableItem = inventory.FirstOrDefault(i => i.Name.Contains(target));
+                    if (examinableItem != null)
+                    {
+                        examinableItem.ExamineText();
                     }
                     else
                     {

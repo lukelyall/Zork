@@ -12,8 +12,14 @@ public class Leaflet : IItem
     {
         Console.WriteLine(Description);
     }
+
+    public void ExamineText()
+    {
+        Console.WriteLine(Examine);
+    }
 }
 
+// implement attempted to open => if attempted to open thief opens the egg later in the game
 public class Egg : IItem
 {
     public string Name => "jewel-encrusted egg";
@@ -23,6 +29,11 @@ public class Egg : IItem
     public void Text()
     {
         Console.WriteLine(Description);
+    }
+
+    public void ExamineText()
+    {
+        Console.WriteLine(Examine);
     }
 }
 
@@ -36,6 +47,11 @@ public class Lunch : IItem
     {
         Console.WriteLine(Description);
     }
+
+    public void ExamineText()
+    {
+        Console.WriteLine(Examine);
+    }
 }
 
 public class Garlic : IItem
@@ -48,6 +64,11 @@ public class Garlic : IItem
     {
         Console.WriteLine(Description);
     }
+
+    public void ExamineText()
+    {
+        Console.WriteLine(Examine);
+    }
 }
 
 public class Sword : IItem
@@ -59,6 +80,11 @@ public class Sword : IItem
     public void Text()
     {
         Console.WriteLine(Description);
+    }
+
+    public void ExamineText()
+    {
+        Console.WriteLine(Examine);
     }
 }
 
@@ -77,5 +103,28 @@ public class Lantern : IItem
     public void Text()
     {
         Console.WriteLine(Description);
+    }
+
+    public void ExamineText()
+    {
+        Console.WriteLine(Examine);
+    }
+}
+
+public class BrownSackItem : IItem
+{
+    public string Name => "brown sack";
+    public string Description => "How does one read a brown sack?";
+    public string Examine => "The brown sack is empty.";
+    public bool inInventory { get; set; } = false;
+
+    public void Text()
+    {
+        Console.WriteLine(Description);
+    }
+
+    public void ExamineText()
+    {
+        Console.WriteLine(Examine);
     }
 }

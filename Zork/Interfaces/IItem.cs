@@ -8,4 +8,5 @@ public interface IItem
     bool inInventory { get; set; }
 
     void Text();
+    void ExamineText();
 }
