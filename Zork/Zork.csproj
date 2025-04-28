@@ -7,9 +7,4 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Folder Include="Locations\Maze\" />
-    <Folder Include="Locations\Underground\" />
-  </ItemGroup>
-
 </Project>
