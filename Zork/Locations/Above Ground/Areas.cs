@@ -140,6 +140,11 @@ public class ForestNorthEast : IArea
     public string Name => "Forest";
     public string Description => "You hear the chirping of birds.";
     public Dictionary<string, IArea> Exits { get; } = new Dictionary<string, IArea>();
+    public Dictionary<string, string> BlockedExits => new Dictionary<string, string>
+    {
+        { "up", "You can't go that way." },
+        { "down", "You can't go that way." }
+    };
 
     public void DisplayInformation(List<IItem> inventory)
     {
@@ -319,7 +324,8 @@ public class CanyonBottom : IArea
     {
         { "east", "You can't go that way." },
         { "west", "You can't go that way." },
-        { "south", "You can't go that way." }
+        { "south", "You can't go that way." },
+        { "down", "You can't go that way." }
     };
 
     public void DisplayInformation(List<IItem> inventory)
@@ -341,7 +347,8 @@ public class EndOfRainbow : IArea
     {
         { "north", "You can't go that way." },
         { "south", "You can't go that way." },
-        { "east", "You can't go that way." }
+        { "east", "You can't go that way." },
+        { "up", "You can't go that way." }
     };
 
     public void DisplayInformation(List<IItem> inventory)
@@ -430,7 +437,8 @@ public class Attic : IArea
     public Dictionary<string, IArea> Exits { get; } = new Dictionary<string, IArea>();
     public Dictionary<string, string> BlockedExits => new Dictionary<string, string>
     {
-        { "north", "You can't go that way." }
+        { "north", "You can't go that way." },
+        { "up", "You can't go that way." }
     };
 
     public void DisplayInformation(List<IItem> inventory)
